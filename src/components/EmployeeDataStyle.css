@@ -1,0 +1,163 @@
+b.Wrapper{
+    /* border: white solid 25px;  */
+    border: white solid  1;
+    /* background-color: rgb(183, 214, 210); */
+    /* background-image: url('eTvbg.jpg'); */
+    background-size: cover;
+    width:100%;
+    height: 100vh;
+    border-radius: 25px;
+    display:grid;
+    grid-template-rows: 0.5fr 5fr 1fr;
+    grid-template-areas: "nav "
+                            "main"
+                            "footer";
+    gap:1em;
+
+
+
+
+}
+.EmployeeDataNavBar{
+
+    display: grid;
+    grid-template-columns: 2fr 0.2fr 0.1fr ;
+    grid-template-areas: "companyName signup companylogo";
+    gap:1em;
+    padding: 20px;
+    align-items: center;
+    justify-content:space-between;
+
+
+}
+.MainChild{
+    grid-area: main;
+    /* display: grid;
+    grid-template-rows: 0.2fr 2fr 1fr;
+    grid-template-areas: "TopBar"
+                        "MiddleBar"
+                        "BtmBar"; */
+
+
+}
+/* .BtmBar{
+  grid-area: BtmBar;
+} */
+.EmployeeDataNavBar a{
+
+    text-decoration: none;
+}
+.EmployeeDataNavBar h1{
+    font-family: Tahoma, Geneva, Verdana, sans-serif;
+    color: rgb(255, 0, 0);
+
+}
+.EmployeeDataNavBar img{
+    border-radius: 50%;
+    width: 50px;
+}
+.CompanyLogin{
+
+    grid-area: login;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "button1 button2";
+
+}
+.search-container{
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .search-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .form-control {
+    width: 300px;
+    margin-right: 10px;
+  }
+.container h2{
+    display: flex;
+    justify-content: center;
+    font-weight: bolder;
+    text-transform:uppercase;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+
+}
+.search-result {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    justify-content: center;
+  }
+.EmployeeDataNavBar Button{
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color:blue;
+    width: 90px;
+    border-radius: 25px;
+    height: 50px;
+    color: white;
+    font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+
+
+}
+.EmployeeDataNavBar Button:hover{
+    background-color: black;
+}
+
+
+@media screen and (max-width:510px) {
+    .EmployeeDataNavBar{
+        display: flex;
+        flex-direction: column;
+    }
+
+    
+}
+.Footer{
+    grid-area: footer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1em;
+    font-size: x-small;
+}
+.Footer a{
+    display: flex;
+    justify-content: space-evenly;
+    padding: 0 5px;
+}
+
+/* src/pages/EmployeeTable.css */
+.employee-table-container {
+    overflow-x: auto;
+  }
+  
+  .employee-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .employee-table th, .employee-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  .employee-table th {
+    background-color: #f2f2f2;
+  }
+  

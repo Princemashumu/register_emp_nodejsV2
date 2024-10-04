@@ -1,0 +1,90 @@
+
+.RegisterWrapper{
+    border: white solid  1;
+    /* background-color: rgb(183, 214, 210); */
+    background-size: cover;
+    width: 100%;
+    height: 100vh;
+    border-radius: 25px;
+    display:grid;
+    grid-template-rows: 0.5fr 5fr 1fr;
+    grid-template-areas: "header "
+                            "main"
+                            "footer";
+    gap:1em;
+
+    align-items: center;
+
+}
+.RegisterNavBar{
+
+    display: grid;
+    grid-template-columns: 2fr 0.2fr 0.1fr ;
+    grid-template-areas: "companyName login companylogo";
+    gap:1em;
+    padding: 20px;
+    align-items: center;
+    justify-content:space-between;
+
+
+}
+.RegisterNavBar h1{
+    font-family: Tahoma, Geneva, Verdana, sans-serif;
+    color: rgb(255, 0, 0);
+
+}
+.RegisterNavBar img{
+    border-radius: 50%;
+    width: 50px;
+}
+.RegisterNavBar a{
+    text-decoration: none;
+}
+.CompanyLogin{
+
+    grid-area: login;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "button1 button2";
+
+}
+.RegisterNavBar Button{
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color:blue;
+    width: 90px;
+    border-radius: 25px;
+    height: 50px;
+    color: white;
+    font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+
+
+}
+.RegisterNavBar Button:hover{
+    background-color: black;
+}
+
+
+@media screen and (max-width:510px) {
+    .RegisterNavBar{
+        display: flex;
+        flex-direction: column;
+    }
+
+    
+}
+.Footer{
+    grid-area: footer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1em;
+    font-size: x-small;
+}
+.Footer a{
+    display: flex;
+    justify-content: space-evenly;
+    padding: 0 5px;
+}
