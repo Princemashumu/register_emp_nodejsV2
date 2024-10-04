@@ -128,10 +128,10 @@ const Home = () => {
     }
   }, [employees, deletedEmployees]);
 
-  const handleSave = (newEmployee) => {
+  const handleEmployeeSave = (newEmployee) => {
     if (editingEmployee) {
       setEmployees(employees.map(emp => (emp.id === editingEmployee.id ? newEmployee : emp)));
-      setEditingEmployee(null);
+      setEditingEmployee(null); // Reset editing state
     } else {
       setEmployees([...employees, newEmployee]);
     }
@@ -157,7 +157,8 @@ const Home = () => {
 
   // Filter employees based on search query
   const filteredEmployees = employees.filter(employee =>
-    employee.id.toLowerCase().includes(searchQuery.toLowerCase())
+    employee.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    employee.name.toLowerCase().includes(searchQuery.toLowerCase()) // Include name search
   );
 
   const handleMouseOver = (e) => {
@@ -199,7 +200,7 @@ const Home = () => {
             <div className="container">
               <input
                 type="text"
-                placeholder="Search by Employee ID"
+                placeholder="Search by Employee ID or Name"
                 value={searchQuery}
                 onChange={handleSearchChange}
                 className="form-control mt-3 mb-3"
@@ -218,7 +219,7 @@ const Home = () => {
             {showModal && (
               <AddEmployeeModal
                 onClose={() => setShowModal(false)}
-                onSave={handleSave}
+                onSave={handleEmployeeSave} // Updated to handleEmployeeSave
                 editingEmployee={editingEmployee}
               />
             )}

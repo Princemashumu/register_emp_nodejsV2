@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import AuthForm from './AuthForm';
+import { auth } from '../../firebaseConfig'; // Import auth from your firebaseConfig
+import { signInWithEmailAndPassword } from 'firebase/auth'; // Import the auth method
 
 // Styled components for the layout
 const AlertOverlay = styled.div`
@@ -54,19 +56,19 @@ const CompanyLogo = styled.div`
     width: auto;
   }
 `;
+
 const LoginWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 40px;
-  margin-top: 55px; /* Add a top margin to avoid content being hidden under the fixed NavBar */
+  margin-top: 70px; /* Adjusted for fixed NavBar */
 `;
-
 
 const Header = styled.div`
   text-align: center;
   margin-bottom: 40px;
-  
+
   h2 {
     color: #004d40;
     font-size: 2em;
@@ -98,28 +100,40 @@ const SocMedContainer = styled.p`
   }
 `;
 
-const LOGIN_CREDENTIALS = {
-  username: 'admin',
-  email: 'admin@example.com',
-  password: 'password123'
-};
-
 const LoginPage = () => {
   const [loginFailed, setLoginFailed] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (username, email, password) => {
-    console.log('Attempting login with:', { username, email, password }); // Log values for debugging
+  const handleLogin = async (email, password) => {
+    console.log('Attempting login with:', { email, password }); // Log values for debugging
 
-    if (
-      username === LOGIN_CREDENTIALS.username &&
-      email === LOGIN_CREDENTIALS.email &&
-      password === LOGIN_CREDENTIALS.password
-    ) {
-      alert('Login successful!');
+    try {
+      // Authenticate with Firebase
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Get the ID token
+      const token = await userCredential.user.getIdToken();
+
+      // Send the token to your backend for validation
+      const response = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token }), // Send token instead of username, email, password
+      });
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const data = await response.json();
+      console.log('Login successful:', data); // Handle the successful login response
+
+      // Store token or user data if needed and navigate
       navigate('/home'); // Redirect to home page after successful login
-    } else {
-      console.log('Login failed'); // Log if login fails
+    } catch (error) {
+      console.error('Login error:', error);
       setLoginFailed(true);
       setTimeout(() => setLoginFailed(false), 3000); // Hide alert after 3 seconds
     }
@@ -135,31 +149,31 @@ const LoginPage = () => {
       </NavBar>
       <LoginWrapper>
         <Header>
-        <h2>
-  FAST <span style={{ color: 'red' }}>EASY</span> EFFECTIVE.
-</h2>
+          <h2>
+            FAST <span style={{ color: 'red' }}>EASY</span> EFFECTIVE.
+          </h2>
           <p>Way To Design and Manage employees Efficiently.</p>
         </Header>
         <div>
           {loginFailed && (
             <AlertOverlay>
-              <Alert>Invalid username, email, or password</Alert>
+              <Alert>Invalid email or password</Alert>
             </AlertOverlay>
           )}
-          <AuthForm handleSubmit={handleLogin} formType="login" initialUsername="admin" />
+          <AuthForm handleSubmit={handleLogin} formType="login" />
         </div>
         <Footer>
           <p>Media and Graphics Prince Mashumu 2024</p>
         </Footer>
       </LoginWrapper>
       <SocMedContainer>
-        <a href="https://www.facebook.com/eTvStaff/">
+        <a href="https://www.facebook.com/eTvStaff/" target="_blank" rel="noopener noreferrer">
           <img id="fb-img" width="25" src="https://i.imgur.com/6ye5lwf.png" alt="Facebook" />
         </a>
-        <a href="https://www.instagram.com/eTvStaff/">
+        <a href="https://www.instagram.com/eTvStaff/" target="_blank" rel="noopener noreferrer">
           <img id="ig-img" width="25" src="https://i.imgur.com/SEsRzFL.png" alt="Instagram" />
         </a>
-        <a href="https://www.twitter.com/eTvStaff/">
+        <a href="https://www.twitter.com/eTvStaff/" target="_blank" rel="noopener noreferrer">
           <img id="twitter-img" width="25" src="https://i.imgur.com/y8o23cc.png" alt="Twitter" />
         </a>
       </SocMedContainer>
