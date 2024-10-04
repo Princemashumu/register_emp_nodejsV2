@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import AuthForm from './AuthForm';
-import { auth } from '../../firebaseConfig'; // Import auth from your firebaseConfig
+import { auth } from '../firebaseConfig'; // Import auth from your firebaseConfig
 import { signInWithEmailAndPassword } from 'firebase/auth'; // Import the auth method
+import Snackbar from '@mui/material/Snackbar'; // Import Snackbar component from MUI
+import MuiAlert from '@mui/material/Alert'; // Import MUI Alert component
 
 // Styled components for the layout
 const AlertOverlay = styled.div`
@@ -100,8 +102,14 @@ const SocMedContainer = styled.p`
   }
 `;
 
+// MUI Alert component for Snackbar
+const AlertSnackbar = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+
 const LoginPage = () => {
   const [loginFailed, setLoginFailed] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false); // State for successful login
   const navigate = useNavigate();
 
   const handleLogin = async (email, password) => {
@@ -131,7 +139,10 @@ const LoginPage = () => {
       console.log('Login successful:', data); // Handle the successful login response
 
       // Store token or user data if needed and navigate
-      navigate('/home'); // Redirect to home page after successful login
+      setLoginSuccess(true); // Trigger the success Snackbar
+      setTimeout(() => {
+        navigate('/home'); // Redirect to home page after successful login
+      }, 1500); // Delay for showing the Snackbar
     } catch (error) {
       console.error('Login error:', error);
       setLoginFailed(true);
@@ -153,7 +164,7 @@ const LoginPage = () => {
             FAST <span style={{ color: 'red' }}>EASY</span> EFFECTIVE.
           </h2>
           <p>Way To Design and Manage employees Efficiently.</p>
-        </Header>
+       
         <div>
           {loginFailed && (
             <AlertOverlay>
@@ -162,6 +173,7 @@ const LoginPage = () => {
           )}
           <AuthForm handleSubmit={handleLogin} formType="login" />
         </div>
+        </Header>
         <Footer>
           <p>Media and Graphics Prince Mashumu 2024</p>
         </Footer>
@@ -177,6 +189,17 @@ const LoginPage = () => {
           <img id="twitter-img" width="25" src="https://i.imgur.com/y8o23cc.png" alt="Twitter" />
         </a>
       </SocMedContainer>
+
+      {/* Snackbar for successful login */}
+      <Snackbar
+        open={loginSuccess}
+        autoHideDuration={3000}
+        onClose={() => setLoginSuccess(false)}
+      >
+        <AlertSnackbar onClose={() => setLoginSuccess(false)} severity="success">
+          Login Successful!
+        </AlertSnackbar>
+      </Snackbar>
     </>
   );
 };

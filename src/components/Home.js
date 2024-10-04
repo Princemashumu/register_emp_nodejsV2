@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import { db } from '../firebaseConfig'; // Import Firestore
+import { collection, addDoc } from 'firebase/firestore';
 import AddEmployeeModal from './AddEmployeeModal';
 import EmployeeTable from './EmployeeTable';
 import DeletedEmployeeTable from './DeletedEmployeeTable';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../firebaseConfig'; // Import auth
 
 // Styled components for the layout
 const NavBar = styled.div`
@@ -62,12 +66,6 @@ const Header = styled.div`
   }
 `;
 
-const Footer = styled.div`
-  text-align: center;
-  margin-top: 20px;
-  color: #777;
-`;
-
 const MainFooter = styled.div`
   text-align: center;
   margin-top: 20px;
@@ -87,54 +85,53 @@ const buttonStyle = {
 };
 
 const Home = () => {
-  const [employees, setEmployees] = useState(() => {
-    // Initial load of employees from localStorage
-    const savedEmployees = localStorage.getItem('employees');
-    return savedEmployees ? JSON.parse(savedEmployees) : [];
-  });
+  const [employees, setEmployees] = useState([]);
   const [nextId, setNextId] = useState(1);
-  const [deletedEmployees, setDeletedEmployees] = useState(() => {
-    // Initial load of deleted employees from localStorage
-    const savedDeletedEmployees = localStorage.getItem('deletedEmployees');
-    return savedDeletedEmployees ? JSON.parse(savedDeletedEmployees) : [];
-  });
-
+  const [deletedEmployees, setDeletedEmployees] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [admin, setAdmin] = useState(() => {
-    // Initial load of admin from localStorage
-    const savedAdmin = localStorage.getItem('admin');
-    return savedAdmin ? JSON.parse(savedAdmin) : null;
-  });
+  const [admin, setAdmin] = useState(null); // Set initial admin to null
 
   useEffect(() => {
-    // Save employees and deleted employees to localStorage whenever they change
-    localStorage.setItem('employees', JSON.stringify(employees));
-    localStorage.setItem('deletedEmployees', JSON.stringify(deletedEmployees));
+    // Fetch employees from Firestore on mount
+    const fetchEmployees = async () => {
+      // Fetch employees from Firestore and update state here
+    };
 
-    // Update nextId based on the highest current ID
-    const maxId = employees.reduce((max, employee) => Math.max(max, parseInt(employee.id, 10)), 0);
-    setNextId(maxId + 1);
+    fetchEmployees();
 
-  }, [employees, deletedEmployees]);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        // Optionally fetch admin details if needed
+        setAdmin({ id: currentUser.uid }); // Set admin with user id
+      } else {
+        setAdmin(null);
+      }
+    });
 
-  useEffect(() => {
-    // Save admin to localStorage whenever it changes
-    if (admin) {
-      localStorage.setItem('admin', JSON.stringify(admin));
+    return () => unsubscribe();
+  }, []);
+
+  const handleSave = async (newEmployee) => {
+    const employeeWithAdmin = { 
+      ...newEmployee, 
+      id: nextId, 
+      adminId: admin ? admin.id : null // Ensure adminId is set to null if admin is not defined
+    };
+
+    try {
+      // Add the new employee to Firestore
+      await addDoc(collection(db, 'employees'), employeeWithAdmin);
+      setEmployees([...employees, employeeWithAdmin]);
+      setNextId(nextId + 1);
+    } catch (error) {
+      console.error('Error adding document: ', error); // Log any errors
     }
-  }, [admin]);
-
-  const handleSave = (newEmployee) => {
-    const employeeWithAdmin = { ...newEmployee, id: nextId, adminId: admin?.id }; // Assign admin ID
 
     if (editingEmployee) {
       setEmployees(employees.map(emp => (emp.id === editingEmployee.id ? employeeWithAdmin : emp)));
       setEditingEmployee(null);
-    } else {
-      setEmployees([...employees, employeeWithAdmin]);
-      setNextId(nextId + 1);
     }
     setShowModal(false);
   };
@@ -159,15 +156,7 @@ const Home = () => {
   // Filter employees based on search query
   const filteredEmployees = employees.filter(employee =>
     employee.id.toString().toLowerCase().includes(searchQuery.toLowerCase())
-  )
-
-  const handleMouseOver = (e) => {
-    e.target.style.backgroundColor = '#388e3c'; /* Darker green */
-  };
-
-  const handleMouseOut = (e) => {
-    e.target.style.backgroundColor = '#4caf50'; /* Green color */
-  };
+  );
 
   return (
     <>
@@ -207,8 +196,6 @@ const Home = () => {
             <button
               style={buttonStyle}
               onClick={() => setShowModal(true)}
-              onMouseOver={handleMouseOver}
-              onMouseOut={handleMouseOut}
             >
               Add Employee
             </button>
@@ -223,12 +210,6 @@ const Home = () => {
             <div>
               <DeletedEmployeeTable deletedEmployees={deletedEmployees} />
             </div>
-
-            {/* <Footer>
-              <Link to="/DeletedEmployees" style={{ textDecoration: 'none', color: 'inherit' }}>
-                <p>View Former Employees.</p>
-              </Link>
-            </Footer> */}
           </div>
 
           <MainFooter>
