@@ -43,7 +43,7 @@ const NavBar = styled.div`
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1000; /* Ensures the NavBar stays on top of other content */
+  z-index: 1000;
 `;
 
 const CompanyName = styled.div`
@@ -119,26 +119,10 @@ const LoginPage = () => {
       // Authenticate with Firebase
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      // Get the ID token
-      const token = await userCredential.user.getIdToken();
-
-      // Send the token to your backend for validation
-      const response = await fetch('http://localhost:5000/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token }), // Send token instead of username, email, password
-      });
-
-      if (!response.ok) {
-        throw new Error('Login failed');
-      }
-
-      const data = await response.json();
-      console.log('Login successful:', data); // Handle the successful login response
-
-      // Store token or user data if needed and navigate
+      // Handle successful login
+      console.log('Login successful:', userCredential); // You can log or save user data here
+      
+      // Redirect to home page after successful login
       setLoginSuccess(true); // Trigger the success Snackbar
       setTimeout(() => {
         navigate('/home'); // Redirect to home page after successful login
