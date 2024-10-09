@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { db } from '../firebaseConfig'; // Adjust the import path as needed
+import { collection, getDocs } from 'firebase/firestore'; // Firestore functions
 
 // Styled container for the table
 const TableContainer = styled.div`
@@ -53,7 +55,29 @@ const TableCell = styled.td`
   }
 `;
 
-const DeletedEmployeeTable = ({ deletedEmployees }) => {
+const DeletedEmployeeTable = () => {
+  const [deletedEmployees, setDeletedEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDeletedEmployees = async () => {
+      const deletedCollection = collection(db, 'deletedEmployees');
+      const deletedSnapshot = await getDocs(deletedCollection);
+      const deletedList = deletedSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setDeletedEmployees(deletedList);
+      setLoading(false); // Stop loading after fetching data
+    };
+
+    fetchDeletedEmployees();
+  }, []);
+
+  if (loading) {
+    return <p>Loading deleted employees...</p>; // Show loading while data is being fetched
+  }
+
   return (
     <TableContainer>
       <h2>Former Employees</h2>

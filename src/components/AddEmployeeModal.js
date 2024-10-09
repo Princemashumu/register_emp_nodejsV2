@@ -90,6 +90,7 @@ const AddEmployeeModal = ({ onClose, onSave, editingEmployee }) => {
   const [email, setEmail] = useState('');
   const [position, setPosition] = useState('');
   const [image, setImage] = useState(null);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (editingEmployee) {
@@ -100,9 +101,8 @@ const AddEmployeeModal = ({ onClose, onSave, editingEmployee }) => {
       setPosition(editingEmployee.position);
       setImage(editingEmployee.image);
     } else {
-      // Generate new ID here or get from props if available
-      // This example assumes nextId is passed from the parent
-      setId(''); // ID is empty for new employee, set it from parent if required
+      // Clear form for new employee
+      setId(''); // Allow manual entry of ID
       setFirstName('');
       setLastName('');
       setEmail('');
@@ -113,6 +113,14 @@ const AddEmployeeModal = ({ onClose, onSave, editingEmployee }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Basic email validation
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
     const newEmployee = {
       id,
       firstName,
@@ -122,6 +130,7 @@ const AddEmployeeModal = ({ onClose, onSave, editingEmployee }) => {
       image,
     };
     onSave(newEmployee);
+    setError(''); // Clear any previous errors
   };
 
   const handleImageChange = (e) => {
@@ -139,9 +148,15 @@ const AddEmployeeModal = ({ onClose, onSave, editingEmployee }) => {
         <CloseButton onClick={onClose}>&times;</CloseButton>
         <ModalHeader>{editingEmployee ? 'Edit Employee' : 'Add Employee'}</ModalHeader>
         <Form onSubmit={handleSubmit}>
+          {error && <p style={{ color: 'red' }}>{error}</p>}
           <Label>
             Employee ID:
-            <Input type="text" value={id} readOnly />
+            <Input
+              type="text"
+              value={id}
+              onChange={(e) => setId(e.target.value)} // Allow manual entry
+              required
+            />
           </Label>
           <Label>
             First Name:
@@ -181,8 +196,12 @@ const AddEmployeeModal = ({ onClose, onSave, editingEmployee }) => {
           </Label>
           <Label>
             Upload Image:
-            <Input type="file" onChange={handleImageChange} />
-            {image && <ImagePreview src={image} alt="Employee" />}
+            <Input type="file" accept="image/*" onChange={handleImageChange} />
+            {image ? (
+              <ImagePreview src={image} alt="Employee" />
+            ) : (
+              <p>No image selected</p>
+            )}
           </Label>
           <SubmitButton type="submit">
             {editingEmployee ? 'Save Changes' : 'Save'}

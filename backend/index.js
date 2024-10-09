@@ -1,61 +1,103 @@
 // Import necessary modules
 const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors'); // For handling cross-origin requests
+const cors = require('cors');
 const admin = require('firebase-admin');
+const { getFirestore } = require('firebase-admin/firestore');
 
 // Initialize Firebase Admin SDK
-const serviceAccount = require('./employee-registration-5087d-firebase-adminsdk-8yomy-ae692e51d1.json'); // Path to your service account key
+const serviceAccount = require('./employee-registration-5087d-firebase-adminsdk-8yomy-ae692e51d1.json'); // Replace with your service account key path
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-const db = admin.firestore(); // Initialize Firestore
+const db = getFirestore();
+
+// Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors()); // Enable CORS
-app.use(bodyParser.json()); // Parse JSON bodies
+app.use(cors()); // Enable CORS for cross-origin requests
+app.use(express.json()); // Parse JSON request bodies
 
-// Login endpoint
-app.post('/api/login', async (req, res) => {
-  const { token } = req.body; // Expecting a Firebase ID token from the client
+// API Endpoints
 
+// 1. GET all employees
+app.get('/api/employees', async (req, res) => {
   try {
-    // Verify the Firebase ID token
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    const uid = decodedToken.uid; // Get user ID from the decoded token
-
-    res.status(200).json({ message: 'Login successful', uid });
+    const employeesSnapshot = await db.collection('employees').get();
+    const employees = employeesSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    res.status(200).json(employees);
   } catch (error) {
-    console.error('Error verifying token:', error);
-    res.status(401).json({ message: 'Invalid token' });
+    console.error('Error fetching employees:', error.message);
+    res.status(500).json({ message: 'Error fetching employees', error: error.message });
   }
 });
 
-// Add an employee to Firestore
+// 2. POST a new employee
 app.post('/api/employees', async (req, res) => {
-  const { name, position, email } = req.body; // Expecting employee details in the request body
+  const { name, position, email } = req.body;
+
+  // Check if required fields are provided
+  if (!name || !position || !email) {
+    return res.status(400).json({ message: 'All fields (name, position, email) are required' });
+  }
 
   try {
-    // Add employee data to Firestore
-    const employeeRef = db.collection('employees').doc(); // Create a new document reference
-    await employeeRef.set({
+    const newEmployeeRef = await db.collection('employees').add({
       name,
       position,
       email,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(), // Add a timestamp
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
-
-    res.status(201).json({ message: 'Employee added successfully', id: employeeRef.id });
+    res.status(201).json({ message: 'Employee added', id: newEmployeeRef.id });
   } catch (error) {
-    console.error('Error adding employee:', error);
-    res.status(500).json({ message: 'Error adding employee' });
+    console.error('Error adding employee:', error.message);
+    res.status(500).json({ message: 'Error adding employee', error: error.message });
   }
 });
 
-// Start server
+// 3. PUT/PATCH to update an employee by ID
+app.put('/api/employees/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, position, email } = req.body;
+
+  // Check if required fields are provided
+  if (!name || !position || !email) {
+    return res.status(400).json({ message: 'All fields (name, position, email) are required' });
+  }
+
+  try {
+    await db.collection('employees').doc(id).update({
+      name,
+      position,
+      email,
+    });
+    res.status(200).json({ message: 'Employee updated successfully' });
+  } catch (error) {
+    console.error('Error updating employee:', error.message);
+    res.status(500).json({ message: 'Error updating employee', error: error.message });
+  }
+});
+
+// 4. DELETE an employee by ID
+app.delete('/api/employees/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await db.collection('employees').doc(id).delete();
+    res.status(200).json({ message: 'Employee deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting employee:', error.message);
+    res.status(500).json({ message: 'Error deleting employee', error: error.message });
+  }
+});
+
+// Start the Express server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

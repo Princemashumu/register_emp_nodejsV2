@@ -100,33 +100,23 @@ const Home = () => {
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Fetch employees from Firestore
   useEffect(() => {
-    try {
-      const storedEmployees = localStorage.getItem('employees');
-      const storedDeletedEmployees = localStorage.getItem('deletedEmployees');
-
-      console.log('Stored Employees:', storedEmployees);
-      console.log('Stored Deleted Employees:', storedDeletedEmployees);
-
-      if (storedEmployees) {
-        setEmployees(JSON.parse(storedEmployees));
+    const fetchEmployees = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/employees'); // Adjust URL if needed
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setEmployees(data); // Set the fetched employees
+      } catch (error) {
+        console.error('Error fetching employees:', error);
       }
-      if (storedDeletedEmployees) {
-        setDeletedEmployees(JSON.parse(storedDeletedEmployees));
-      }
-    } catch (error) {
-      console.error("Error parsing localStorage data:", error);
-    }
-  }, []);
+    };
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('employees', JSON.stringify(employees));
-      localStorage.setItem('deletedEmployees', JSON.stringify(deletedEmployees));
-    } catch (error) {
-      console.error("Error saving to localStorage:", error);
-    }
-  }, [employees, deletedEmployees]);
+    fetchEmployees(); // Call the fetch function
+  }, []); // Empty dependency array means this runs once on mount
 
   const handleEmployeeSave = (newEmployee) => {
     if (editingEmployee) {
